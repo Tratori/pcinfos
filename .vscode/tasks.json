@@ -1,0 +1,9 @@
+{
+    "tasks": [
+        {
+            "label": "spider",
+            "type": "shell",
+            "command": "scrapy crawl cpus"
+        }
+    ],
+}
