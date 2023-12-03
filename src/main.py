@@ -1,8 +1,20 @@
+import scrapy
+from scrapy.crawler import CrawlerProcess
+
+from web_scrap.spiders.cpus_spider import CPUSpider
+
 
 def main():
-    print("Hello World!")
+    process = CrawlerProcess(
+        settings={
+            "FEEDS": {
+                "items.json": {"format": "json"},
+            },
+        }
+    )
 
-
+    process.crawl(CPUSpider)
+    process.start()  # the script will block here until the crawling is finished
 
 if __name__ == "__main__":
     main()
