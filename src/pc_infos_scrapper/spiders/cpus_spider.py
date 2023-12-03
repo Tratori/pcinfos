@@ -9,9 +9,20 @@ class CPUSpider(scrapy.Spider):
     release_date = [str(i) for i in range(2023, 1999, -1)]
 
     custom_settings = {
-        'DOWNLOAD_DELAY': 10,  # 10 seconds of delay
+        'DOWNLOAD_DELAY': 10,
         'AUTOTHROTTLE_ENABLED': True,
         'AUTOTHROTTLE_DEBUG': True,
+        'CONCURRENT_REQUESTS': 1,
+        'COOKIES_ENABLED': False,
+        'DOWNLOADER_MIDDLEWARES': {
+            'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+            'scrapy_user_agents.middlewares.RandomUserAgentMiddleware': 400,
+            # 'rotating_proxies.middlewares.RotatingProxyMiddleware': 610,
+            # 'rotating_proxies.middlewares.BanDetectionMiddleware': 620,
+        },
+        'HTTPCACHE_ENABLED': False,
+        # 'ROTATING_PROXY_LIST_PATH': '.\\src\\pc_infos_scrapper\\proxies.txt',
+        # 'LOG_LEVEL': 'INFO'
     }
 
     # release_date = [2021]
@@ -23,6 +34,12 @@ class CPUSpider(scrapy.Spider):
     def debug(self, response):
         from scrapy.shell import inspect_response
         inspect_response(response, self)
+
+    def response_is_ban(self, request, response):
+        return b'banned' in response.body
+
+    def exception_is_ban(self, request, exception):
+        return None
 
     def start_requests(self):
         for mfgr in self.manufacturers:
