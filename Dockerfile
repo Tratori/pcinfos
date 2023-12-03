@@ -8,7 +8,7 @@ COPY requirements.txt .
 
 # Install dependencies
 RUN python -m venv .venv
-RUN pip install scrapy
+RUN pip install scrapy scrapy-user-agents scrapy-rotating-proxies
 
 # Copy the entire project
 COPY . .
