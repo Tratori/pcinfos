@@ -1,7 +1,7 @@
 import scrapy
 from scrapy.crawler import CrawlerProcess
 
-from web_scrap.spiders.cpus_spider import CPUSpider
+from pc_infos_scrapper.spiders.cpus_spider import CPUSpider
 
 
 def main():

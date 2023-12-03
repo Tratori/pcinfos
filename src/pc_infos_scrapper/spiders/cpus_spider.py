@@ -1,6 +1,4 @@
 from pathlib import Path
-from ..utils.table import Table
-
 import scrapy
 
 
@@ -9,29 +7,29 @@ class CPUSpider(scrapy.Spider):
     base_url = "https://www.techpowerup.com/cpu-specs/?mfgr={0}&released={1}&mobile=No&server=No&sort=name"
     manufacturers = ["AMD", "Intel"]
     release_date = [str(i) for i in range(2023, 1999, -1)]
-    
+
+    custom_settings = {
+        'DOWNLOAD_DELAY': 10,  # 10 seconds of delay
+        'AUTOTHROTTLE_ENABLED': True,
+        'AUTOTHROTTLE_DEBUG': True,
+    }
+
     # release_date = [2021]
-    
-    keys = [ "Physical", "Processor", "Performance", "Architecture", "Core", "Cache" ]
+    # manufacturers = ["AMD"]
+
+    keys = ["Physical", "Processor", "Performance",
+            "Architecture", "Core", "Cache"]
 
     def debug(self, response):
         from scrapy.shell import inspect_response
         inspect_response(response, self)
-    
-    def start_requests(self):
-        urls = []
 
+    def start_requests(self):
         for mfgr in self.manufacturers:
             for date in self.release_date:
-                urls.append(self.base_url.format(mfgr, date))
-
-        for url in urls:
-            yield scrapy.Request(url=url, callback=self.parse)
-
+                yield scrapy.Request(url=self.base_url.format(mfgr, date), callback=self.parse)
 
     def parse(self, response):
-        page = response.body
-
         table = response.css('table.processors')
         rows = table.css('tr')
 
@@ -40,7 +38,6 @@ class CPUSpider(scrapy.Spider):
 
             if follow_link is not None:
                 yield response.follow(follow_link, callback=self.parse_cpu)
-
 
     def parse_cpu(self, response):
         def extract_with_css(query, selector=response):
@@ -60,17 +57,18 @@ class CPUSpider(scrapy.Spider):
 
         for key in self.keys:
             section = response.css(f'section:contains("{key}")')
-            sectionData = {}
+            section_data = {}
 
             for tr in section.css("tr"):
                 th = tr.css("th")
                 td = tr.css("td")
-                # print("===========tr===========")
-                # print(th.xpath(".//text()").get().strip(), td.xpath(".//text()").get().strip())
-                
-                if th and td:
-                    sectionData[th.xpath(".//text()").get().strip()] = td.xpath(".//text()").get().strip()
 
-            processor[key] = sectionData
+                if th and td:
+                    subkey = th.xpath(".//text()").get()
+                    value = td.xpath(".//text()").get()
+
+                    section_data[subkey.strip()] = value.strip() if value else ""
+
+            processor[key] = section_data
 
         yield processor
