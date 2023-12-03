@@ -8,10 +8,10 @@ COPY requirements.txt .
 
 # Install dependencies
 RUN python -m venv .venv
-RUN . .venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt
+RUN pip install scrapy
 
 # Copy the entire project
 COPY . .
 
 # Run the main.py script
-CMD ["venv/bin/python", "main.py"]
+CMD ["python", "src/main.py"]
