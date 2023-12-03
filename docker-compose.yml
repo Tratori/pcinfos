@@ -1,0 +1,11 @@
+# docker-compose.yml
+
+version: '3'
+
+services:
+  pc_infos:
+    build: .
+    container_name: my_python_app_container
+    restart: no
+    volumes:
+      - .:/app
