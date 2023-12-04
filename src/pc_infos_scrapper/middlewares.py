@@ -4,6 +4,8 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
+from twisted.internet import reactor
+from twisted.internet.defer import Deferred
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
@@ -101,3 +103,38 @@ class PcInfosScrapperDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info("Spider opened: %s" % spider.name)
+
+class PauseMiddleware:
+    def __init__(self, crawler):
+        self.crawler = crawler
+        self.request_count = 0
+        self.pause_after_requests = 30  # Set the number of requests to pause after
+        self.pause_duration = 1800  # Set the duration to pause in seconds
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        middleware = cls(crawler)
+        crawler.signals.connect(middleware.spider_closed, signal=signals.spider_closed)
+        return middleware
+
+    def process_request(self, request, spider):
+        self.request_count += 1
+        if self.request_count % self.pause_after_requests == 0:
+            spider.logger.info(f'Pausing spider after {self.request_count} requests')
+            self.crawler.engine.pause()
+            reactor.callLater(self.pause_duration, self.unpause_spider, spider)
+
+    def unpause_spider(self, spider):
+        spider.logger.info(f'Resuming spider after {self.pause_duration} seconds')
+        self.crawler.engine.unpause()
+
+    def process_response(self, request, response, spider):
+        if response.status != 200:
+            spider.logger.info(f'Pausing spider after error status code: {response.status}')
+            self.crawler.engine.pause()
+            reactor.callLater(self.pause_duration, self.unpause_spider, spider)
+        return response
+
+    def spider_closed(self, spider, reason):
+        spider.logger.info(f'Spider closed after {self.request_count} requests')
+

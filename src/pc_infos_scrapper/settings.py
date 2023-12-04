@@ -7,6 +7,8 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+# LOG_LEVEL = 'INFO'
+
 BOT_NAME = "pc_infos_scrapper"
 
 SPIDER_MODULES = ["pc_infos_scrapper.spiders"]
@@ -20,37 +22,28 @@ NEWSPIDER_MODULE = "pc_infos_scrapper.spiders"
 ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 1
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 10
+DOWNLOAD_DELAY = 15
 
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 1
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-COOKIES_ENABLED = False
+# COOKIES_ENABLED = False
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
 
 # Override the default request headers:
 DEFAULT_REQUEST_HEADERS = {
-    "authority": "www.techpowerup.com",
-    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-    "accept-language": "en-US,en;q=0.9,pt-BR;q=0.8,pt;q=0.7",
-    "dnt": "1",
-    "sec-ch-ua": '"Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24"',
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": '"Windows"',
-    "sec-fetch-dest": "document",
-    "sec-fetch-mode": "navigate",
-    "sec-fetch-site": "none",
-    "sec-fetch-user": "?1",
-    "upgrade-insecure-requests": "1",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "Accept-Language": "en-US,en;q=0.9,pt-BR;q=0.8,pt;q=0.7",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
 }
 
 # Enable or disable spider middlewares
@@ -62,13 +55,16 @@ DEFAULT_REQUEST_HEADERS = {
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-#    "pc_infos_scrapper.middlewares.PcInfosScrapperDownloaderMiddleware": 543,
+    #"pc_infos_scrapper.middlewares.PcInfosScrapperDownloaderMiddleware": 543,
+    # 'pc_infos_scrapper.middlewares.HandleErrorResponse': 543
 
-    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
-    'scrapy_user_agents.middlewares.RandomUserAgentMiddleware': 400,
+    # 'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+    # 'scrapy_user_agents.middlewares.RandomUserAgentMiddleware': 400,
 
     # 'rotating_proxies.middlewares.RotatingProxyMiddleware': 610,
     # 'rotating_proxies.middlewares.BanDetectionMiddleware': 620,
+    
+    'pc_infos_scrapper.middlewares.PauseMiddleware': 999,
 }
 
 # Enable or disable extensions
@@ -95,7 +91,7 @@ AUTOTHROTTLE_ENABLED = True
 # each remote server
 #AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 # Enable showing throttling stats for every response received:
-AUTOTHROTTLE_DEBUG = False
+AUTOTHROTTLE_DEBUG = True
 
 # Enable and configure HTTP caching (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
