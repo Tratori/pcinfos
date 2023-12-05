@@ -3,29 +3,62 @@ import scrapy
 from scrapy import signals
 import time
 
+KEYS = ["Physical", "Processor", "Performance", "Architecture", "Core", "Cache"]
+MANUFACTURERS = ["AMD", "Intel"]
+RELEASE_DATES = [str(i) for i in range(2023, 2015, -1)]
+
+# MANUFACTURERS = ["AMD"]
+# RELEASE_DATES = [2022]
+
 
 class CPUSpider(scrapy.Spider):
     name = "cpus"
     base_url = "https://www.techpowerup.com/cpu-specs/?mfgr={0}&released={1}&mobile=No&server=No&sort=name"
-    manufacturers = ["AMD", "Intel"]
-    release_date = [str(i) for i in range(2023, 1999, -1)]
+    # handle_httpstatus_list = [302, 401, 404, 429]
+    allowed_domains = ['www.techpowerup.com']
 
     custom_settings = {
-        'CONCURRENT_REQUESTS': 1,
-        'DOWNLOAD_DELAY': 15,
-        'DEFAULT_REQUEST_HEADERS': {
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-            "Accept-Language": "en-US,en;q=0.9,pt-BR;q=0.8,pt;q=0.7",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
-        },
-        'DOWNLOADER_MIDDLEWARES': {
-            'pc_infos_scrapper.middlewares.PauseMiddleware': 999,
-        },
-        'AUTOTHROTTLE_ENABLED': True,
-        'AUTOTHROTTLE_DEBUG': True,
-        'HTTPCACHE_ENABLED': True,
+        # 'CONCURRENT_REQUESTS': 1,
+        'DOWNLOAD_DELAY': 5,
         'LOG_LEVEL': 'DEBUG',
-        'LOG_FILE': 'cpus.log',
+        'TELNETCONSOLE_ENABLED': False,
+
+        'HTTPCACHE_ENABLED': True,
+        'HTTPCACHE_POLICY': 'pc_infos_scrapper.middlewares.CachePolicy',
+        'COOKIES_ENABLED': False,
+
+        'AUTOTHROTTLE_ENABLED': True,
+        'AUTO_THROTTLE_DEBUG': True,
+        
+        'DOWNLOADER_MIDDLEWARES': {
+            'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+            'scrapy_user_agents.middlewares.RandomUserAgentMiddleware': 400,  # 400
+            'rotating_proxies.middlewares.RotatingProxyMiddleware': 610,
+            'rotating_proxies.middlewares.BanDetectionMiddleware': 620,
+            # 'pc_infos_scrapper.middlewares.PauseMiddleware': 999,
+        },
+        'DEFAULT_REQUEST_HEADERS': {
+            "authority": "www.techpowerup.com",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "accept-language": "en-US,en;q=0.9,pt-BR;q=0.8,pt;q=0.7",
+            "cookie": "_ga=GA1.2.350510651.1701566717; _gid=GA1.2.1468098798.1701566717; xffrom_search=google; xfcsrf=eo0ClSb7WJuUXYKW; botcheck=91630f101e7594c03c8196ba9a5933f7",
+            "dnt": "1",
+            "sec-ch-ua": '"Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"Windows"',
+            "sec-fetch-dest": "document",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-site": "none",
+            "sec-fetch-user": "?1",
+            "upgrade-insecure-requests": "1",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+        },
+
+        # Extensions
+        'ROTATING_PROXY_LIST_PATH': './src/pc_infos_scrapper/proxies.txt',
+        'ROTATING_PROXY_PAGE_RETRY_TIMES': 20,
+
+        'RANDOM_UA_PER_PROXY': True,
     }
 
     # Append all failed urls in a list to retry them separately later
@@ -39,20 +72,21 @@ class CPUSpider(scrapy.Spider):
         crawler.signals.connect(spider.handle_spider_closed, signals.spider_closed)
         return spider
 
-    keys = ["Physical", "Processor", "Performance",
-            "Architecture", "Core", "Cache"]
-
     def debug(self, response):
         from scrapy.shell import inspect_response
         inspect_response(response, self)
 
     def start_requests(self):
-        for mfgr in self.manufacturers:
-            for date in self.release_date:
-                yield scrapy.Request(url=self.base_url.format(mfgr, date), callback=self.parse)
+        for mfgr in MANUFACTURERS:
+            for date in RELEASE_DATES:
+                yield scrapy.Request(
+                    url=self.base_url.format(mfgr, date), 
+                    callback=self.parse,
+                )
 
     def handle_spider_closed(self, reason):
         self.crawler.stats.set_value('failed_urls', ', '.join(self.failed_urls))
+
 
     def process_exception(self, response, exception, spider):
         ex_class = "%s.%s" % (exception.__class__.__module__, exception.__class__.__name__)
@@ -61,11 +95,28 @@ class CPUSpider(scrapy.Spider):
 
 
     def parse(self, response):
+        if not response.css('a.page-header__logo-wrapper'):
+            # self.debug(response)
+            yield scrapy.Request(url=response.url, )
+
+        # if response.status in self.handle_httpstatus_list:
+        #     self.crawler.stats.inc_value('failed_url_count')
+        #     self.failed_urls.append(response.url)
+        
         table = response.css('table.processors')
         rows = table.css('tr')
 
+        # self.log(response)
+        # self.log(response.status)
+        # self.log(response.body)
+        # self.log(table)
+        # self.log(rows)
+        # self.debug(response)
+
         for row in rows:
             follow_link = row.css('a::attr(href)').get()
+
+            follow_link = 'https://www.techpowerup.com/cpu-specs/ryzen-3-4100.c2757'
 
             if follow_link is not None:
                 yield response.follow(follow_link, callback=self.parse_cpu)
@@ -73,11 +124,12 @@ class CPUSpider(scrapy.Spider):
     def parse_cpu(self, response):
 
         # if response.status in [404, 429]:
-        if response.status != 200:
-            self.crawler.stats.inc_value('failed_url_count')
-            self.failed_urls.append(response.url)
+        # if response.status in self.handle_httpstatus_list:
+        #     self.crawler.stats.inc_value('failed_url_count')
+        #     self.failed_urls.append(response.url)
+        #     return
 
-            return
+        self.debug(response)
 
         def extract_with_css(query, selector=response):
             return selector.css(query).get(default="").strip()
@@ -94,7 +146,9 @@ class CPUSpider(scrapy.Spider):
         processor = {}
         processor['Name'] = extract_with_css("h1.cpuname::text")
 
-        for key in self.keys:
+        self.log(processor['Name'])
+
+        for key in KEYS:
             section = response.css(f'section:contains("{key}")')
             section_data = {}
 
@@ -106,8 +160,7 @@ class CPUSpider(scrapy.Spider):
                     subkey = th.xpath(".//text()").get()
                     value = td.xpath(".//text()").get()
 
-                    section_data[subkey.strip()] = value.strip(
-                    ) if value else ""
+                    section_data[subkey.strip()] = value.strip() if value else ""
 
             processor[key] = section_data
 

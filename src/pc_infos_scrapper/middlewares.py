@@ -10,6 +10,7 @@ from twisted.internet.defer import Deferred
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
 
+from scrapy.extensions.httpcache import DummyPolicy
 
 class PcInfosScrapperSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
@@ -138,3 +139,6 @@ class PauseMiddleware:
     def spider_closed(self, spider, reason):
         spider.logger.info(f'Spider closed after {self.request_count} requests')
 
+class CachePolicy(DummyPolicy):
+   def should_cache_response(self, response, request):
+       return response.status == 200
