@@ -129,7 +129,7 @@ class CPUSpider(scrapy.Spider):
         #     self.failed_urls.append(response.url)
         #     return
 
-        self.debug(response)
+        # self.debug(response)
 
         def extract_with_css(query, selector=response):
             return selector.css(query).get(default="").strip()
