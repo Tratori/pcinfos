@@ -116,8 +116,6 @@ class CPUSpider(scrapy.Spider):
         for row in rows:
             follow_link = row.css('a::attr(href)').get()
 
-            follow_link = 'https://www.techpowerup.com/cpu-specs/ryzen-3-4100.c2757'
-
             if follow_link is not None:
                 yield response.follow(follow_link, callback=self.parse_cpu)
 
