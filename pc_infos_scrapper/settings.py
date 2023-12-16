@@ -7,6 +7,9 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+import constants
+
+
 BOT_NAME = "pc_infos_scrapper"
 
 SPIDER_MODULES = ["pc_infos_scrapper.spiders"]
@@ -14,12 +17,18 @@ NEWSPIDER_MODULE = "pc_infos_scrapper.spiders"
 
 LOG_LEVEL = "DEBUG"
 FEEDS = {
-    'items.json': {
-        'format': 'json',
-        'encoding': 'utf8',
-        'store_empty': False,
-        'overwrite': True,
+    "items.json": {
+        "format": "json",
+        "encoding": "utf8",
+        "store_empty": False,
+        "overwrite": True,
     },
+    # 'items.csv': { # csv
+    #     'format': 'csv',
+    #     'encoding': 'utf8',
+    #     'store_empty': False,
+    #     'overwrite': True,
+    # }
 }
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
@@ -29,12 +38,12 @@ FEEDS = {
 # ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 1
+# CO1NCURRENT_REQUESTS = 1
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 5
+DOWNLOAD_DELAY = 2
 
 # The download delay setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 1
@@ -62,7 +71,6 @@ DEFAULT_REQUEST_HEADERS = {
     "sec-fetch-user": "?1",
     "upgrade-insecure-requests": "1",
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
-
 }
 
 # Enable or disable spider middlewares
@@ -75,11 +83,10 @@ DEFAULT_REQUEST_HEADERS = {
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     # "pc_infos_scrapper.middlewares.PcInfosScrapperDownloaderMiddleware": 543,
-
     # 'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
     # 'scrapy_user_agents.middlewares.RandomUserAgentMiddleware': 400,
-    'rotating_proxies.middlewares.RotatingProxyMiddleware': 610,
-    'rotating_proxies.middlewares.BanDetectionMiddleware': 620,
+    "rotating_proxies.middlewares.RotatingProxyMiddleware": 610,
+    "rotating_proxies.middlewares.BanDetectionMiddleware": 620,
     # 'pc_infos_scrapper.middlewares.PauseMiddleware': 999,
 }
 
@@ -91,9 +98,9 @@ DOWNLOADER_MIDDLEWARES = {
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {
-#    "pc_infos_scrapper.pipelines.PcInfosScrapperPipeline": 300,
-# }
+ITEM_PIPELINES = {
+    "pc_infos_scrapper.pipelines.CpuExportPipeline": 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -128,5 +135,6 @@ FEED_EXPORT_ENCODING = "utf-8"
 ########## PROXY ##########
 
 ROTATING_PROXY_PAGE_RETRY_TIMES = 5
-ROTATING_PROXY_LIST_PATH = './src/pc_infos_scrapper/proxies.txt'
 RANDOM_UA_PER_PROXY = True
+
+ROTATING_PROXY_LIST_PATH = constants.PROXY_LIST_LOCAL_FILENAME
