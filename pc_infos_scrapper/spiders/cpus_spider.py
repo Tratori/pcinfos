@@ -108,7 +108,6 @@ class CpuSpider(scrapy.Spider):
             processor[key] = section_data
             cpu[key.lower()] = section_data
 
-        self.scraped_items.append(cpu)
         yield processor
 
     def process_exception(self, response, exception, spider):
