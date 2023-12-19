@@ -1,16 +1,10 @@
-# Dockerfile
 FROM python:3.10
 
 WORKDIR /app
 
-# Copy the requirements.txt first to leverage Docker cache
-COPY requirements.txt .
+# scrapy-user-agents scrapy-rotating-proxies
+RUN pip install scrapy 
 
-# Install dependencies
-RUN pip install scrapy scrapy-user-agents scrapy-rotating-proxies
-
-# Copy the entire project
 COPY . .
 
-# Run the main.py script
 CMD ["python", "src/main.py"]
