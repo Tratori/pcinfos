@@ -19,10 +19,10 @@ def main():
 
     logging.info("Starting main.py ...")
 
-    logging.info("Searching for proxy list ...")
-    refresher = ProxyRefresher()
-    if not refresher.file_is_updated():
-        refresher.refresh_proxies()
+    # logging.info("Searching for proxy list ...")
+    # refresher = ProxyRefresher()
+    # if not refresher.file_is_updated():
+    #     refresher.refresh_proxies()
 
     # os.environ["SCRAPY_SETTINGS_MODULE"] = "pc_infos_scrapper.settings"
 

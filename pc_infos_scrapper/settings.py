@@ -38,12 +38,12 @@ FEEDS = {
 # ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-# CO1NCURRENT_REQUESTS = 1
+CO1NCURRENT_REQUESTS = 1
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 2
+DOWNLOAD_DELAY = 10
 
 # The download delay setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 1
@@ -85,9 +85,9 @@ DOWNLOADER_MIDDLEWARES = {
     # "pc_infos_scrapper.middlewares.PcInfosScrapperDownloaderMiddleware": 543,
     # 'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
     # 'scrapy_user_agents.middlewares.RandomUserAgentMiddleware': 400,
-    "rotating_proxies.middlewares.RotatingProxyMiddleware": 610,
-    "rotating_proxies.middlewares.BanDetectionMiddleware": 620,
-    # 'pc_infos_scrapper.middlewares.PauseMiddleware': 999,
+    # "rotating_proxies.middlewares.RotatingProxyMiddleware": 610,
+    # "rotating_proxies.middlewares.BanDetectionMiddleware": 620,
+    "pc_infos_scrapper.middlewares.PauseMiddleware": 999,
 }
 
 # Enable or disable extensions
@@ -98,9 +98,9 @@ DOWNLOADER_MIDDLEWARES = {
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {
-    "pc_infos_scrapper.pipelines.CpuExportPipeline": 300,
-}
+# ITEM_PIPELINES = {
+#     "pc_infos_scrapper.pipelines.CpuExportPipeline": 300,
+# }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -137,4 +137,4 @@ FEED_EXPORT_ENCODING = "utf-8"
 ROTATING_PROXY_PAGE_RETRY_TIMES = 5
 RANDOM_UA_PER_PROXY = True
 
-ROTATING_PROXY_LIST_PATH = constants.PROXY_LIST_LOCAL_FILENAME
+# ROTATING_PROXY_LIST_PATH = constants.PROXY_LIST_LOCAL_FILENAME

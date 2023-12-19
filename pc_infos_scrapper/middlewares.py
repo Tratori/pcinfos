@@ -112,7 +112,7 @@ class PauseMiddleware:
         self.crawler = crawler
         self.request_count = 0
         self.pause_after_requests = 30  # Set the number of requests to pause after
-        self.pause_duration = 1800  # Set the duration to pause in seconds
+        self.pause_duration = 43200  # Set the duration to pause in seconds
 
     @classmethod
     def from_crawler(cls, crawler):
