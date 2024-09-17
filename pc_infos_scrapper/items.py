@@ -8,3 +8,4 @@ class CpuItem(Item):
     architecture = Field()
     core = Field()
     cache = Field()
+    features = Field()

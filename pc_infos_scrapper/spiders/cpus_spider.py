@@ -9,12 +9,12 @@ from pc_infos_scrapper.items import CpuItem
 
 
 # Techpowerup CPU specs page
-BASE_URL = "https://www.techpowerup.com/cpu-specs/?mfgr={0}&released={1}&mobile=No&server=No&sort=name"
+BASE_URL = "https://www.techpowerup.com/cpu-specs/?mfgr={0}&released={1}&mobile=No&server=Yes&sort=name"
 TEST_CPU_URL_SINGLE = ""
 
 # List of CPU manufacturers
-MANUFACTURERS = ["AMD", "Intel"]
-RELEASE_DATES = [str(i) for i in range(2021, 2015, -1)]
+MANUFACTURERS = ["AMD"]
+RELEASE_DATES = [str(i) for i in range(2003, 2025, 1)]
 
 
 class CpuSpider(scrapy.Spider):
@@ -50,6 +50,14 @@ class CpuSpider(scrapy.Spider):
 
         # handle http errors
         if response.status in self.handle_httpstatus_list:
+            if response.status == 429:
+                print(f"Received 429 Too Many Requests for URL: {response.url}")
+                print("Please fix the issue, then press Enter to retry...")
+                input()  # Wait for manual intervention
+                yield scrapy.Request(
+                    url=response.url, callback=self.parse, dont_filter=True
+                )
+                return
             self.process_exception(response, str(response.status), self)
             return
 
@@ -68,6 +76,14 @@ class CpuSpider(scrapy.Spider):
     def parse_cpu(self, response):
         # handle http errors
         if response.status in self.handle_httpstatus_list:
+            if response.status == 429:
+                print(f"Received 429 Too Many Requests for URL: {response.url}")
+                print("Please fix the issue, then press Enter to retry...")
+                input()  # Wait for manual intervention
+                yield scrapy.Request(
+                    url=response.url, callback=self.parse_cpu, dont_filter=True
+                )
+                return
             self.process_exception(response, str(response.status), self)
             return
 
@@ -108,6 +124,17 @@ class CpuSpider(scrapy.Spider):
             processor[key] = section_data
             cpu[key.lower()] = section_data
 
+        # Features parsing
+        section = response.css(f'section:contains("Features")')
+        feature_list = []
+        for tr in section.css("tr"):
+            for li in tr.css("li"):
+                feature = li.css("::text").get()
+                if feature:
+                    feature_list.append(feature.strip())
+        print(f"Feature list: {feature_list}")
+        processor["features"] = {"tags": feature_list}
+        cpu["features"] = {"tags": feature_list}
         yield processor
 
     def process_exception(self, response, exception, spider):
